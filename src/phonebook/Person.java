@@ -6,11 +6,11 @@ import java.util.Objects;
 import static java.util.Objects.requireNonNull;
 
 public class Person implements Comparable<Person> {
-    private String name;
-    private String surname;
+    private final String name;
+    private final String surname;
 
     public Person(String name) {
-        this(name, "");
+        this(name, null);
     }
 
     public Person(String name, String surname) {
@@ -55,12 +55,13 @@ public class Person implements Comparable<Person> {
     @Override
     public int compareTo(Person other) {
         return Comparator.comparing(Person::getName)
-                .thenComparing(Person::getSurname)
+                .thenComparing(Person::getSurname, Comparator.nullsFirst(Comparator.naturalOrder()))
                 .compare(this, other);
     }
 
     @Override
     public String toString() {
-        return surname.isEmpty() ? name : name + " " + surname;
+        return surname == null || surname.isEmpty() ? name : name + " " + surname;
     }
 }
+

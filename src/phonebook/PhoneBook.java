@@ -2,6 +2,7 @@ package phonebook;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
 public class PhoneBook {
@@ -12,10 +13,10 @@ public class PhoneBook {
     }
 
     public PhoneBook(PhoneBook other) {
-        this.records = other.records.clone();
+        this.records = Arrays.copyOf(other.records, other.records.length);
     }
 
-    public int indexOfByLinearSearch(Person person) {
+    private int indexOfByLinearSearch(Person person) {
         for (int i = 0; i < records.length; i++) {
             if (records[i].getPerson().equals(person)) {
                 return i;
@@ -24,7 +25,7 @@ public class PhoneBook {
         return -1;
     }
 
-    public int indexOfByJumpSearch(Person person) {
+    private int indexOfByJumpSearch(Person person) {
         if (records.length == 0) {
             return -1;
         }
@@ -53,48 +54,44 @@ public class PhoneBook {
         return -1;
     }
 
-    public List<PhoneRecord> linearSearch(Person[] searchPeople) {
+    private int indexOfByBinarySearch(Person searchPerson) {
+        int left = 0;
+        int right = records.length - 1;
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            final int compare = searchPerson.compareTo(records[mid].getPerson());
+            if (compare == 0) {
+                return mid;
+            } else if (compare < 0) {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return -1;
+    }
+
+    private List<PhoneRecord> search(Person[] searchPeople, ToIntFunction<Person> indexOf) {
         final List<PhoneRecord> phoneRecords = new ArrayList<>(searchPeople.length);
         for (Person searchPerson : searchPeople) {
-            final int i = indexOfByLinearSearch(searchPerson);
+            final int i = indexOf.applyAsInt(searchPerson);
             if (i >= 0) {
                 phoneRecords.add(records[i]);
             }
         }
         return phoneRecords;
+    }
+
+    public List<PhoneRecord> linearSearch(Person[] searchPeople) {
+        return search(searchPeople, this::indexOfByLinearSearch);
     }
 
     public List<PhoneRecord> jumpSearch(Person[] searchPeople) {
-        final List<PhoneRecord> phoneRecords = new ArrayList<>(searchPeople.length);
-        for (Person searchPerson : searchPeople) {
-            final int i = indexOfByJumpSearch(searchPerson);
-            if (i >= 0) {
-                phoneRecords.add(records[i]);
-            }
-        }
-        return phoneRecords;
+        return search(searchPeople, this::indexOfByJumpSearch);
     }
 
     public List<PhoneRecord> binarySearch(Person[] searchPeople) {
-        final List<PhoneRecord> phoneRecords = new ArrayList<>(searchPeople.length);
-        MAIN:
-        for (Person searchPerson : searchPeople) {
-            int left = 0;
-            int right = records.length - 1;
-            while (left <= right) {
-                int mid = left + (right - left) / 2;
-                final int compare = searchPerson.compareTo(records[mid].getPerson());
-                if (compare == 0) {
-                    phoneRecords.add(records[mid]);
-                    continue MAIN;
-                } else if (compare < 0) {
-                    right = mid - 1;
-                } else {
-                    left = mid + 1;
-                }
-            }
-        }
-        return phoneRecords;
+        return search(searchPeople, this::indexOfByBinarySearch);
     }
 
     public boolean bubbleSortWithTimeout(long timeout) {
@@ -130,25 +127,23 @@ public class PhoneBook {
         int left = 0;
         int right = records.length - 1;
         final Deque<Integer> deque = new ArrayDeque<>();
-        MAIN:
         while (left < right) {
             int pivotIndex = partition(left, right);
             if (left < pivotIndex - 1) {
-                deque.add(pivotIndex + 1);
-                deque.add(right);
+                if (pivotIndex + 1 < right) {
+                    deque.add(pivotIndex + 1);
+                    deque.add(right);
+                }
                 right = pivotIndex - 1;
             } else if (pivotIndex + 1 < right) {
                 left = pivotIndex + 1;
             } else {
-                while (!deque.isEmpty()) {
+                if (deque.isEmpty()) {
+                    break;
+                } else {
                     right = deque.removeLast();
                     left = deque.removeLast();
-                    if (left < right) {
-                        continue MAIN;
-                    }
                 }
-                left = 0;
-                right = 0;
             }
         }
     }
@@ -169,6 +164,10 @@ public class PhoneBook {
         final PhoneRecord temp = records[i];
         records[i] = records[j];
         records[j] = temp;
+    }
+
+    public PhoneRecord[] getRecords() {
+        return records;
     }
 
     @Override

@@ -1,7 +1,5 @@
 package phonebook;
 
-import java.util.Objects;
-
 import static java.util.Objects.requireNonNull;
 
 public class PhoneRecord
@@ -33,25 +31,4 @@ public class PhoneRecord
 		return person;
 	}
 
-	@Override
-	public boolean equals(Object o)
-	{
-		if (this == o)
-		{
-			return true;
-		}
-		if (o == null || getClass() != o.getClass())
-		{
-			return false;
-		}
-		PhoneRecord record = (PhoneRecord) o;
-		return number.equals(record.number) &&
-			person.equals(record.person);
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return Objects.hash(number, person);
-	}
 }

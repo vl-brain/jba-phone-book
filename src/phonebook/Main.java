@@ -19,6 +19,31 @@ public class Main {
         final long linearSearchTime = linearSearch(phoneBook, searchPeople);
         bubbleSortAndJumpSearch(new PhoneBook(phoneBook), searchPeople, linearSearchTime);
         quickSortAndBinarySearch(new PhoneBook(phoneBook), searchPeople);
+        hashTableSearch(new PhoneBook(phoneBook), searchPeople);
+    }
+
+    private static void hashTableSearch(PhoneBook phoneBook, Person[] searchPeople) {
+        System.out.println("\nStart searching (hash table)...");
+        final long startCreate = System.currentTimeMillis();
+        final PhoneRecord[] records = phoneBook.getRecords();
+        final HashTable<Person, PhoneRecord> hashTable = new HashTable<>(records.length * 2);
+        for (PhoneRecord record : records) {
+            hashTable.put(record.getPerson(), record);
+        }
+        final long createTime = System.currentTimeMillis() - startCreate;
+        final long startSearch = System.currentTimeMillis();
+        final List<PhoneRecord> searchResults = new ArrayList<>(searchPeople.length);
+        for (Person searchPerson : searchPeople) {
+            final PhoneRecord phoneRecord = hashTable.get(searchPerson);
+            if (phoneRecord != null) {
+                searchResults.add(phoneRecord);
+            }
+        }
+        final long searchTime = System.currentTimeMillis() - startSearch;
+        System.out.printf("Found %d / %d entries. Time taken: %s.%n",
+                searchResults.size(), searchPeople.length, formatTime(createTime + searchTime));
+        System.out.printf("Creating time: %s.%n", formatTime(createTime));
+        System.out.printf("Searching time: %s.%n", formatTime(searchTime));
     }
 
     private static void quickSortAndBinarySearch(PhoneBook phoneBook, Person[] searchPeople) {
@@ -29,10 +54,10 @@ public class Main {
         final long startSearch = System.currentTimeMillis();
         final List<PhoneRecord> searchResults = phoneBook.binarySearch(searchPeople);
         final long searchTime = System.currentTimeMillis() - startSearch;
-        System.out.println(String.format("Found %d / %d entries. Time taken: %s.",
-                searchResults.size(), searchPeople.length, formatTime(sortTime + searchTime)));
-        System.out.println(String.format("Sorting time: %s.", formatTime(sortTime)));
-        System.out.println(String.format("Searching time: %s.", formatTime(searchTime)));
+        System.out.printf("Found %d / %d entries. Time taken: %s.%n",
+                searchResults.size(), searchPeople.length, formatTime(sortTime + searchTime));
+        System.out.printf("Sorting time: %s.%n", formatTime(sortTime));
+        System.out.printf("Searching time: %s.%n", formatTime(searchTime));
     }
 
     private static void bubbleSortAndJumpSearch(PhoneBook phoneBook, Person[] searchPeople, long searchTime) {
@@ -44,11 +69,11 @@ public class Main {
         final List<PhoneRecord> secondSearchResults = sortComplete ? phoneBook.jumpSearch(searchPeople) :
                 phoneBook.linearSearch(searchPeople);
         final long secondSearchTime = System.currentTimeMillis() - secondStartSearch;
-        System.out.println(String.format("Found %d / %d entries. Time taken: %s.",
-                secondSearchResults.size(), searchPeople.length, formatTime(sortTime + secondSearchTime)));
-        System.out.println(String.format("Sorting time: %s.%s", formatTime(sortTime),
-                sortComplete ? "" : " - STOPPED, moved to linear search"));
-        System.out.println(String.format("Searching time: %s.", formatTime(secondSearchTime)));
+        System.out.printf("Found %d / %d entries. Time taken: %s.%n",
+                secondSearchResults.size(), searchPeople.length, formatTime(sortTime + secondSearchTime));
+        System.out.printf("Sorting time: %s.%s%n", formatTime(sortTime),
+                sortComplete ? "" : " - STOPPED, moved to linear search");
+        System.out.printf("Searching time: %s.%n", formatTime(secondSearchTime));
     }
 
     private static long linearSearch(PhoneBook phoneBook, Person[] searchPeople) {
@@ -56,8 +81,8 @@ public class Main {
         final long startSearch = System.currentTimeMillis();
         final List<PhoneRecord> searchResults = phoneBook.linearSearch(searchPeople);
         final long searchTime = System.currentTimeMillis() - startSearch;
-        System.out.println(String.format("Found %d / %d entries. Time taken: %s.",
-                searchResults.size(), searchPeople.length, formatTime(searchTime)));
+        System.out.printf("Found %d / %d entries. Time taken: %s.%n",
+                searchResults.size(), searchPeople.length, formatTime(searchTime));
         return searchTime;
     }
 
@@ -82,3 +107,4 @@ public class Main {
     }
 
 }
+
